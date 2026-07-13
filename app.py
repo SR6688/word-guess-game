@@ -1,4 +1,15 @@
 import streamlit as st
+import subprocess
+import sys
+
+# --- 终极强制补丁：如果 spacy-pkuseg 没装上，程序运行时强行安装 ---
+try:
+    import spacy_pkuseg
+except ImportError:
+    st.info("正在初始化环境，请稍候...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "spacy-pkuseg>=0.0.27"])
+    import spacy_pkuseg
+
 import spacy
 import os
 import random
@@ -7,7 +18,6 @@ import random
 @st.cache_resource
 def load_model():
     try:
-        # 直接加载模型，确保环境中已安装 spacy-pkuseg
         return spacy.load("zh_core_web_md")
     except Exception as e:
         st.error(f"模型加载失败: {e}")
