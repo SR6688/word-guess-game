@@ -1,13 +1,16 @@
 import streamlit as st
 import spacy
-import random
-import os
 
 # --- 1. 配置与模型加载 ---
 @st.cache_resource
 def load_model():
-    # 注意：在 Streamlit Cloud，模型下载需要时间，这行代码在第一次部署时会较慢
-    return spacy.load("zh_core_web_md")
+    try:
+        # 加载中文模型并禁用 pkuseg_model 组件
+        # 这样可以绕过 pkuseg 在新版 Python 下的安装/编译问题
+        return spacy.load("zh_core_web_md", disable=["pkuseg_model"])
+    except Exception as e:
+        st.error(f"模型加载失败，请检查环境配置: {e}")
+        return None
 
 nlp = load_model()
 
