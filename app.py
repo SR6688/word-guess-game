@@ -1,29 +1,25 @@
 import streamlit as st
 import spacy
 from spacy.lang.zh import Chinese
-from spacy.vectors import Vectors
 import os
 import random
 
 @st.cache_resource
 def load_model():
     try:
-        # 1. 创建一个空的中文语言对象，不加载任何导致崩溃的管道组件
+        # 1. 自动寻找模型目录
+        base_path = "/home/adminuser/venv/lib/python3.14/site-packages/zh_core_web_md"
+        # 找到实际的模型子目录
+        sub_dirs = [d for d in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, d))]
+        model_path = os.path.join(base_path, sub_dirs[0])
+        
+        # 2. 直接从磁盘加载词汇表和向量，跳过所有解析器/分词器
         nlp = Chinese()
-        
-        # 2. 手动指定模型路径 (通常在 site-packages/zh_core_web_md 下)
-        # 如果你不知道绝对路径，让 spacy 报错并从日志中读取该路径
-        model_path = "/home/adminuser/venv/lib/python3.14/site-packages/zh_core_web_md/zh_core_web_md-3.8.0"
-        
-        # 3. 直接加载向量表，跳过所有模型配置检查
-        # 这绕过了对 pkuseg 的所有依赖
-        vec_path = os.path.join(model_path, "vectors")
-        nlp.vocab.vectors.from_disk(vec_path)
+        nlp.vocab.from_disk(os.path.join(model_path, "vocab"))
         
         return nlp
     except Exception as e:
-        st.error(f"模型加载失败: {e}")
-        # 如果上方路径不匹配，查看日志中显示的路径并修正
+        st.error(f"模型路径加载失败: {e}")
         return None
 
 nlp = load_model()
